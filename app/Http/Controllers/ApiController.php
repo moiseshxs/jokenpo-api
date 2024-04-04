@@ -16,6 +16,25 @@ class ApiController extends Controller
         ]);
     }
 
+    public function login(Request $request)
+    {
+        //credentials pega o valor do email e senha digitada no input
+        $credentials = $request->only('email', 'senha');
+
+        //verifica se esse valor digitado bate no banco
+        $cliente = Cliente::where('email', $credentials['email'])
+            ->where('senha', $credentials['senha'])
+            ->first();
+
+        //se não bater retorna esse erro
+        if (!$cliente) {
+            return response()->json(['message' => 'Login inválido'], 401);
+        }
+
+        //se bater devolve as informações do cliente
+        return response()->json(['success' => true, 'cliente' => $cliente], 200);
+    }
+
     // Método para exibir detalhes de um usuário
     public function show($id)
     {
@@ -61,17 +80,17 @@ class ApiController extends Controller
 
     public function destroy($id)
     {
-        if(Cliente::where('id', $id)->exists()) {
+        if (Cliente::where('id', $id)->exists()) {
             $cliente = Cliente::find($id);
             $cliente->delete();
-    
+
             return response()->json([
-              'mensagem' => 'Cliente deletado'
+                'mensagem' => 'Cliente deletado'
             ], 202);
-          } else {
+        } else {
             return response()->json([
-              'mensagem' => 'Cliente não encontrado'
+                'mensagem' => 'Cliente não encontrado'
             ], 404);
-          }
+        }
     }
 }
