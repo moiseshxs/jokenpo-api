@@ -19,11 +19,11 @@ class ApiController extends Controller
     public function login(Request $request)
     {
         //credentials pega o valor do email e senha digitada no input
-        $credentials = $request->only('email', 'senha');
+        $credentials = $request->only('email_cliente', 'senha_cliente');
 
         //verifica se esse valor digitado bate no banco
-        $cliente = Cliente::where('email', $credentials['email'])
-            ->where('senha', $credentials['senha'])
+        $cliente = Cliente::where('email_cliente', $credentials['email_cliente'])
+            ->where('senha_cliente', $credentials['senha_cliente'])
             ->first();
 
         //se não bater retorna esse erro

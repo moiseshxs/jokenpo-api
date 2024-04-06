@@ -16,11 +16,36 @@ class ApiController extends Controller
         ]);
     }
 
+    public function login(Request $request)
+    {
+        //credentials pega o valor do email e senha digitada no input
+        $credentials = $request->only('email', 'senha');
+
+        //verifica se esse valor digitado bate no banco
+        $cliente = Cliente::where('email', $credentials['email'])
+            ->where('senha', $credentials['senha'])
+            ->first();
+
+        //se não bater retorna esse erro
+        if (!$cliente) {
+            return response()->json(['message' => 'Login inválido'], 401);
+        }
+
+        //se bater devolve as informações do cliente
+        return response()->json(['success' => true, 'cliente' => $cliente], 200);
+    }
+
     // Método para exibir detalhes de um usuário
     public function show($id)
     {
-        $cliente = Cliente::findOrFail($id);
-        return view('clientes.show', compact('cliente'));
+        if (Cliente::where('id', $id)->exists()) {
+            $cliente = Cliente::where('id', $id)->get()->toJson(JSON_PRETTY_PRINT);
+            return response($cliente, 200);
+        } else {
+            return response()->json([
+                'mensagem' => 'Cliente não encontrado :('
+            ], 404);
+        }
     }
 
     // Método para armazenar um novo usuário
@@ -33,5 +58,39 @@ class ApiController extends Controller
             'mensagem' => 'Cliente cadastrado com sucesso!',
             'cliente' => $cliente
         ], 200);
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (Cliente::where('id', $id)->exists()) {
+            $cliente = Cliente::find($id);
+            $cliente->nome = is_null($request->nome) ? $cliente->nome : $request->nome;
+            $cliente->senha = is_null($request->senha) ? $cliente->senha : $request->senha;
+            $cliente->save();
+
+            return response()->json([
+                'mensagem' => 'Cliente atualizado com sucesso!'
+            ], 200);
+        } else {
+            return response()->json([
+                'mensagem' => 'Cliente não encontrado'
+            ], 404);
+        }
+    }
+
+    public function destroy($id)
+    {
+        if (Cliente::where('id', $id)->exists()) {
+            $cliente = Cliente::find($id);
+            $cliente->delete();
+
+            return response()->json([
+                'mensagem' => 'Cliente deletado'
+            ], 202);
+        } else {
+            return response()->json([
+                'mensagem' => 'Cliente não encontrado'
+            ], 404);
+        }
     }
 }
